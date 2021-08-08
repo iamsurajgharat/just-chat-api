@@ -14,3 +14,8 @@ server.pid
 *.eml
 /dist/
 .cache
+.bloop/*
+.metals/*
+.vscode/*
+.bsp/*
+project/.*
