@@ -71,7 +71,10 @@ class SessionController @Inject() (
     ] { request =>
       implicit val timeout = Timeout(1.second)
       val n1 = "userActor" + scala.util.Random.nextInt()
-
+      val userId = request.queryString.get("userId")
+      val name = request.queryString.get("name")
+      println("Request user id :"+userId)
+      println("Request user name :"+name)
       userSessionManagerActor
         .ask(replyTo =>
           UserSessionManagerActor.CreateUserSessionActor(n1, replyTo)

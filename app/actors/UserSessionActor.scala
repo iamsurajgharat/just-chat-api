@@ -69,6 +69,7 @@ object UserSessionActor2 {
     messgae match {
       case Connect(userId, name) =>
         println("Received connect :" + userId)
+        responseActor ! Connected("Connection success!")
       case Error(err) =>
         println("Received Error :" + err)
       case Done(msg) =>

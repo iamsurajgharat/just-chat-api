@@ -68,10 +68,6 @@ object Location {
       val long = json("long").as[Double]
       JsSuccess(Location(lat, long))
     }
-    def p1():Unit={
-      ((JsPath \ "lat").read[Double] and
-      (JsPath \ "long").read[Double])
-    }
   }
 }
 
