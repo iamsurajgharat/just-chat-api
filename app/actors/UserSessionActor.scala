@@ -3,6 +3,8 @@ package actors
 import akka.actor._
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
+import models.SingleChat
+import models.UserProfile
 
 object UserSessionActor {
   def props(out: ActorRef) = Props(new UserSessionActor(out))
@@ -46,8 +48,12 @@ object UserSessionActor2 {
 
   sealed trait UserResponse
   final case class Connected(ackMsg: String) extends UserResponse
+  final case class PinnedChats(chats:List[models.Chat]) extends UserResponse
   final case class Done2(msg: Option[String]) extends UserResponse
   final case class Error2(err: String) extends UserResponse
+
+
+  
 
   import play.api.libs.json._
 
@@ -58,6 +64,7 @@ object UserSessionActor2 {
   implicit val userResponseDoneFormat = Json.format[Done2]
   implicit val userResponseErrorFormat = Json.format[Error2]
   implicit val userResponseConnectedFormat = Json.format[Connected]
+  implicit val userResponsePinnedChatFormat = Json.format[PinnedChats]
   implicit val userResponseFormat = Json.format[UserResponse]
 
   import play.api.mvc.WebSocket.MessageFlowTransformer
@@ -65,11 +72,11 @@ object UserSessionActor2 {
   implicit val messageFlowTransformer =
     MessageFlowTransformer.jsonMessageFlowTransformer[UserRequest, UserResponse]
 
-  def apply(responseActor:typed.ActorRef[UserResponse]): Behavior[UserRequest] = Behaviors.receive((context, messgae) => {
+  def apply(userProfile:models.UserProfile, responseActor:typed.ActorRef[UserResponse]): Behavior[UserRequest] = Behaviors.receive((context, messgae) => {
     messgae match {
       case Connect(userId, name) =>
         println("Received connect :" + userId)
-        responseActor ! Connected("Connection success!")
+        responseActor ! PinnedChats(List(SingleChat(UserProfile("abc", "F1 L1")), SingleChat(UserProfile("xyz", "F2 L2"))))
       case Error(err) =>
         println("Received Error :" + err)
       case Done(msg) =>

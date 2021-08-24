@@ -15,10 +15,11 @@ import akka.stream.scaladsl.MergeHub
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.BroadcastHub
+import models._
 object UserSessionManagerActor {
   sealed trait UserSessionManagerCommand
   final case class CreateUserSessionActor(
-      userId: String,
+      userProfile: UserProfile,
       replyTo: ActorRef[Flow[UserRequest, UserResponse, NotUsed]]
   ) extends UserSessionManagerCommand
   final case class CreateUserSessionActor3(
@@ -30,7 +31,7 @@ object UserSessionManagerActor {
     (context, message) =>
       {
         message match {
-          case CreateUserSessionActor(userId, replyTo) =>
+          case CreateUserSessionActor(userProfile, replyTo) =>
             implicit val mat: Materializer = Materializer(context)
 
             val (hubSink, hubSource) = MergeHub
@@ -41,7 +42,7 @@ object UserSessionManagerActor {
             val source1 = ActorSource.actorRef[UserResponse](
               completionMatcher = { case Done2(msg) => },
               failureMatcher = { case Error2(err) =>
-                new java.lang.Error("Something terrible happened :"+err)
+                new java.lang.Error("Something terrible happened :" + err)
               },
               bufferSize = 8,
               overflowStrategy = OverflowStrategy.fail
@@ -52,13 +53,14 @@ object UserSessionManagerActor {
 
             val userSessionActor: ActorRef[UserRequest] =
               context.spawn(
-                UserSessionActor2(userResponseActor),
-                "userSessionActor3" + userId
+                UserSessionActor2(userProfile, userResponseActor),
+                "userSessionActor3" + userProfile.id
               )
             val sink: Sink[UserRequest, NotUsed] =
               ActorSink.actorRef(
                 userSessionActor,
-                onCompleteMessage = Done(Some("completed, probably from client side")),
+                onCompleteMessage =
+                  Done(Some("completed, probably from client side")),
                 onFailureMessage = (err) => {
                   println("Error signal from client :" + err)
                   Error(err.getMessage())
