@@ -16,44 +16,69 @@ import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.BroadcastHub
 import models._
+import akka.actor.typed.scaladsl.ActorContext
 object UserSessionManagerActor {
+
+  // actor supported messages
   sealed trait UserSessionManagerCommand
   final case class CreateUserSessionActor(
       userProfile: UserProfile,
+      actorBehavior: (
+          UserProfile,
+          ActorRef[UserResponse]
+      ) => Behavior[UserRequest],
       replyTo: ActorRef[Flow[UserRequest, UserResponse, NotUsed]]
   ) extends UserSessionManagerCommand
 
+
+  // actors behaviour
   def apply(): Behavior[UserSessionManagerCommand] = Behaviors.receive {
     (context, message) =>
       {
         message match {
-          case CreateUserSessionActor(userProfile, replyTo) =>
+          case msg @ CreateUserSessionActor(
+                userProfile,
+                actorBehavior,
+                replyTo
+              ) =>
+
             implicit val mat: Materializer = Materializer(context)
-
-            // hubSink can be joined dynamically by any number of upstreams, 
+            // hubSink can be joined dynamically by any number of upstreams,
             // and it will merge all those into one and send to its downstream which is hubSource here.
-            // On the other hand, hubSource can be joined dynamically to any number of downstreams, 
+            // On the other hand, hubSource can be joined dynamically to any number of downstreams,
             // and it will broadcast whatever it gets from its upstream (which is hubSink here) to these dynamically joined downstreams.
-            val (hubSink, hubSource) = MergeHub.source[UserResponse](perProducerBufferSize = 16).toMat(BroadcastHub.sink(bufferSize = 256))(Keep.both).run()
+            val (hubSink, hubSource) = MergeHub
+              .source[UserResponse](perProducerBufferSize = 16)
+              .toMat(BroadcastHub.sink(bufferSize = 256))(Keep.both)
+              .run()
 
-            // create a stream source which is based on an actor. 
+            // create a stream source which is based on an actor.
             // It means if we pass a message to that actor, the message would be emitted into the stream from this source
             val actorSource = ActorSource.actorRef[UserResponse](
-              completionMatcher = { case Done2(msg) => },
-              failureMatcher = { case Error2(err) =>
+              completionMatcher = { case CompleteOut(msg) => },
+              failureMatcher = { case ErrorOut(err) =>
                 new java.lang.Error("Something terrible happened :" + err)
               },
               bufferSize = 8,
               overflowStrategy = OverflowStrategy.fail
             )
 
-            val userResponseActor = actorSource.toMat(hubSink)(akka.stream.scaladsl.Keep.left).run()
+            val userResponseActor =
+              actorSource.toMat(hubSink)(akka.stream.scaladsl.Keep.left).run()
 
-            val userSessionActor: ActorRef[UserRequest] = context.spawn(UserSessionActor(userProfile, userResponseActor), "userSessionActor3" + userProfile.id)
+            val userSessionActor: ActorRef[UserRequest] = context.spawn(
+              actorBehavior(msg.userProfile, userResponseActor),
+              "userSessionActor3" + msg.userProfile.id
+            )
 
-            val sink: Sink[UserRequest, NotUsed] = ActorSink.actorRef(userSessionActor, onCompleteMessage = Complete(Some("Complete signal, probably from client side")), onFailureMessage = (err) => {
+            val sink: Sink[UserRequest, NotUsed] =
+              ActorSink.actorRef[UserRequest](
+                userSessionActor,
+                onCompleteMessage =
+                  CompleteIn(Some("Complete signal, probably from client side")),
+                onFailureMessage = (err) => {
                   println("Error signal from client :" + err)
-                  Error(err.getMessage())
+                  ErrorIn(err.getMessage())
                 }
               )
 

@@ -1,10 +1,10 @@
 package actors
 
-import akka.actor._
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import models.SingleChat
 import models.UserProfile
+import akka.actor.typed.ActorRef
 
 object UserSessionActor {
 
@@ -25,23 +25,28 @@ object UserSessionActor {
 
   sealed trait UserRequest
   final case class Connect(userId: String, name: String) extends UserRequest
-  final case class Complete(msg: Option[String]) extends UserRequest
-  final case class Error(err: String) extends UserRequest
+  final case class Ping(text: String) extends UserRequest
+  final case class CompleteIn(msg: Option[String]) extends UserRequest
+  final case class ErrorIn(err: String) extends UserRequest
 
   sealed trait UserResponse
+  final case class Pong(text: String) extends UserResponse
   final case class Connected(ackMsg: String) extends UserResponse
   final case class PinnedChats(chats: List[models.Chat]) extends UserResponse
-  final case class Done2(msg: Option[String]) extends UserResponse
-  final case class Error2(err: String) extends UserResponse
+  final case class CompleteOut(msg: Option[String]) extends UserResponse
+  final case class ErrorOut(err: String) extends UserResponse
 
   import play.api.libs.json._
 
   implicit val userRequestConnectFormat = Json.format[Connect]
-  implicit val userRequestCompleteFormat = Json.format[Complete]
-  implicit val userRequestErrorFormat = Json.format[Error]
+  implicit val userRequestCompleteInFormat = Json.format[CompleteIn]
+  implicit val userRequestErrorInFormat = Json.format[ErrorIn]
+  implicit val userRequestPingFormat = Json.format[Ping]
   implicit val userRequestFormat = Json.format[UserRequest]
-  implicit val userResponseDoneFormat = Json.format[Done2]
-  implicit val userResponseErrorFormat = Json.format[Error2]
+
+  implicit val userResponseCompleteOutFormat = Json.format[CompleteOut]
+  implicit val userResponsePongFormat = Json.format[Pong]
+  implicit val userResponseErrorOutFormat = Json.format[ErrorOut]
   implicit val userResponseConnectedFormat = Json.format[Connected]
   implicit val userResponsePinnedChatFormat = Json.format[PinnedChats]
   implicit val userResponseFormat = Json.format[UserResponse]
@@ -53,23 +58,31 @@ object UserSessionActor {
 
   def apply(
       userProfile: models.UserProfile,
-      responseActor: typed.ActorRef[UserResponse]
+      responseActor: ActorRef[UserResponse]
   ): Behavior[UserRequest] = Behaviors.receive((context, messgae) => {
     messgae match {
       case Connect(userId, name) =>
         println("Received connect :" + userId)
         responseActor ! Connected("Yasss, finally we are connected!")
-        responseActor ! PinnedChats(
+        sendPinnedChats(responseActor)
+        Behaviors.same
+      case ErrorIn(err) =>
+        println("Received Error :" + err)
+        Behaviors.stopped
+      case CompleteIn(msg) =>
+        println("Received Complete :" + msg)
+        Behaviors.stopped
+      case Ping(text) => responseActor ! Pong(text)
+        Behaviors.same
+    }
+  }) 
+
+  private def sendPinnedChats(replyTo : ActorRef[UserResponse]):Unit = {
+    replyTo ! PinnedChats(
           List(
             SingleChat(UserProfile("abc", "F1 L1")),
             SingleChat(UserProfile("xyz", "F2 L2"))
           )
         )
-      case Error(err) =>
-        println("Received Error :" + err)
-      case Complete(msg) =>
-        println("Received Complete :" + msg)
-    }
-    Behaviors.same
-  }) 
+  }
 }

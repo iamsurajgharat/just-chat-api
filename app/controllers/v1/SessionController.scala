@@ -43,15 +43,26 @@ class SessionController @Inject() (
     Ok("Done " + h)
   }
 
-  def socket3() = WebSocket.acceptOrResult[UserSessionActor.UserRequest,UserSessionActor.UserResponse] { request =>
-      implicit val timeout = Timeout(1.second)
-      val n1 = "userActor" + scala.util.Random.nextInt()
-      val userId = request.queryString.get("userId").get.head
-      val name = request.queryString.get("name").get.head
-      println("Request user id :"+userId)
-      println("Request user name :"+name)
-      
-      userSessionManagerActor.ask(replyTo => UserSessionManagerActor.CreateUserSessionActor(models.UserProfile(userId, name), replyTo))
-        .map(Right(_))
-    }
+  def socket3() = WebSocket.acceptOrResult[
+    UserSessionActor.UserRequest,
+    UserSessionActor.UserResponse
+  ] { request =>
+    implicit val timeout = Timeout(1.second)
+    val n1 = "userActor" + scala.util.Random.nextInt()
+    val userId = request.queryString.get("userId").get.head
+    val name = request.queryString.get("name").get.head
+    println("Request user id :" + userId)
+    println("Request user name :" + name)
+
+    userSessionManagerActor
+      .ask(replyTo =>
+        UserSessionManagerActor.CreateUserSessionActor(
+          models.UserProfile(userId, name),
+          (userProfile, responseActor) =>
+            UserSessionActor(userProfile, responseActor),
+          replyTo
+        )
+      )
+      .map(Right(_))
+  }
 }
