@@ -1,4 +1,4 @@
-name := """ust-chat-api"""
+name := """just-chat-api"""
 organization := "com.surajgharat.justchat"
 
 version := "1.0-SNAPSHOT"

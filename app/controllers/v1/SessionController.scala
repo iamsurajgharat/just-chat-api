@@ -5,13 +5,12 @@ import play.api.mvc.ControllerComponents
 import javax.inject.Inject
 import play.api.mvc.WebSocket
 import play.api.libs.streams.ActorFlow
-import actors.UserSessionActor
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Flow
-import actors.UserSessionActor2
+import actors.UserSessionActor
 import akka.stream.typed.scaladsl.ActorSink
 import akka.actor.typed.ActorRef
 import akka.NotUsed
@@ -44,53 +43,15 @@ class SessionController @Inject() (
     Ok("Done " + h)
   }
 
-  def socket() = WebSocket.accept[String, String] { request =>
-    println("web socket request ")
-    ActorFlow.actorRef { out =>
-      println("Creating the actor")
-      UserSessionActor.props(out)
-    }
-  }
-
-  def socket2() = WebSocket.accept[String, String] { request =>
-    // Log events to the console
-
-    val in = Sink.foreach[String](println)
-
-    // Send a single 'Hello!' message and then leave the socket open
-    val out = Source.single("Hello!").concat(Source.maybe)
-    val out2 = Source.fromIterator(() => List("10", "20", "30").iterator)
-
-    Flow.fromSinkAndSource(in, out2)
-  }
-
-  def socket3() = WebSocket
-    .acceptOrResult[
-      UserSessionActor2.UserRequest,
-      UserSessionActor2.UserResponse
-    ] { request =>
+  def socket3() = WebSocket.acceptOrResult[UserSessionActor.UserRequest,UserSessionActor.UserResponse] { request =>
       implicit val timeout = Timeout(1.second)
       val n1 = "userActor" + scala.util.Random.nextInt()
       val userId = request.queryString.get("userId").get.head
       val name = request.queryString.get("name").get.head
       println("Request user id :"+userId)
       println("Request user name :"+name)
-      userSessionManagerActor
-        .ask(replyTo =>
-          UserSessionManagerActor.CreateUserSessionActor(models.UserProfile(userId, name), replyTo)
-        )
-        .map(Right(_))
-    }
-
-  def socket4() = WebSocket
-    .acceptOrResult[String, String] { request =>
-      implicit val timeout = Timeout(1.second)
-      val n1 = "userActor" + scala.util.Random.nextInt()
-
-      userSessionManagerActor
-        .ask(replyTo =>
-          UserSessionManagerActor.CreateUserSessionActor3(n1, replyTo)
-        )
+      
+      userSessionManagerActor.ask(replyTo => UserSessionManagerActor.CreateUserSessionActor(models.UserProfile(userId, name), replyTo))
         .map(Right(_))
     }
 }

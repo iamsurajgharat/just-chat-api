@@ -7,10 +7,7 @@ import models.SingleChat
 import models.UserProfile
 
 object UserSessionActor {
-  def props(out: ActorRef) = Props(new UserSessionActor(out))
-}
 
-class UserSessionActor(out: ActorRef) extends Actor {
   /*
     Messages this actor should handle
       1. Connect
@@ -25,25 +22,10 @@ class UserSessionActor(out: ActorRef) extends Actor {
       2. Kafka messages
       3.
    */
-  def receive = {
-    case "Hi" =>
-    case msg: String =>
-      println("I received your message: " + msg)
-      println("This out ref " + out)
-      out ! ("['I received your message ']")
-    case anyMsg =>
-      println("Unhandled message :" + anyMsg)
-  }
 
-  override def postStop(): Unit = {
-    println("The actor is stopping")
-  }
-}
-
-object UserSessionActor2 {
   sealed trait UserRequest
   final case class Connect(userId: String, name: String) extends UserRequest
-  final case class Done(msg: Option[String]) extends UserRequest
+  final case class Complete(msg: Option[String]) extends UserRequest
   final case class Error(err: String) extends UserRequest
 
   sealed trait UserResponse
@@ -52,13 +34,10 @@ object UserSessionActor2 {
   final case class Done2(msg: Option[String]) extends UserResponse
   final case class Error2(err: String) extends UserResponse
 
-
-  
-
   import play.api.libs.json._
 
   implicit val userRequestConnectFormat = Json.format[Connect]
-  implicit val userRequestDoneFormat = Json.format[Done]
+  implicit val userRequestCompleteFormat = Json.format[Complete]
   implicit val userRequestErrorFormat = Json.format[Error]
   implicit val userRequestFormat = Json.format[UserRequest]
   implicit val userResponseDoneFormat = Json.format[Done2]
@@ -79,28 +58,9 @@ object UserSessionActor2 {
         responseActor ! PinnedChats(List(SingleChat(UserProfile("abc", "F1 L1")), SingleChat(UserProfile("xyz", "F2 L2"))))
       case Error(err) =>
         println("Received Error :" + err)
-      case Done(msg) =>
-        println("Received Done :" + msg)
+      case Complete(msg) =>
+        println("Received Complete :" + msg)
     }
     Behaviors.same
-  })
-}
-
-object UserSessionActor3 {
-  def apply(responseActor:typed.ActorRef[String]): Behavior[String] = Behaviors.receiveMessage(message => {
-    message match {
-      case "Complete" =>
-      println("Completed!!!")
-    case "Error" =>
-      println("Error")
-    case x if x.contains("Suraj") =>
-    println("New special message :" + message)  
-    println("Response actor :" + responseActor)  
-      responseActor ! "{}"
-    case _ =>
-      println("New message :" + message)
-    }
-    Behaviors.same
-  })
-  
+  }) 
 }

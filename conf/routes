@@ -6,11 +6,8 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index()
 GET     /places                     controllers.v1.HelloController.listPlaces()
-GET     /connect                    controllers.v1.SessionController.connect
-GET     /socket                    controllers.v1.SessionController.socket
-GET     /socket2                    controllers.v1.SessionController.socket2
-GET     /socket3                    controllers.v1.SessionController.socket3
-GET     /socket4                    controllers.v1.SessionController.socket4
+GET     /connect                    controllers.v1.SessionController.connect()
+GET     /socket3                    controllers.v1.SessionController.socket3()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
