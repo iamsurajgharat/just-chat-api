@@ -30,7 +30,7 @@ object UserSessionActor {
 
   sealed trait UserResponse
   final case class Connected(ackMsg: String) extends UserResponse
-  final case class PinnedChats(chats:List[models.Chat]) extends UserResponse
+  final case class PinnedChats(chats: List[models.Chat]) extends UserResponse
   final case class Done2(msg: Option[String]) extends UserResponse
   final case class Error2(err: String) extends UserResponse
 
@@ -51,11 +51,20 @@ object UserSessionActor {
   implicit val messageFlowTransformer =
     MessageFlowTransformer.jsonMessageFlowTransformer[UserRequest, UserResponse]
 
-  def apply(userProfile:models.UserProfile, responseActor:typed.ActorRef[UserResponse]): Behavior[UserRequest] = Behaviors.receive((context, messgae) => {
+  def apply(
+      userProfile: models.UserProfile,
+      responseActor: typed.ActorRef[UserResponse]
+  ): Behavior[UserRequest] = Behaviors.receive((context, messgae) => {
     messgae match {
       case Connect(userId, name) =>
         println("Received connect :" + userId)
-        responseActor ! PinnedChats(List(SingleChat(UserProfile("abc", "F1 L1")), SingleChat(UserProfile("xyz", "F2 L2"))))
+        responseActor ! Connected("Yasss, finally we are connected!")
+        responseActor ! PinnedChats(
+          List(
+            SingleChat(UserProfile("abc", "F1 L1")),
+            SingleChat(UserProfile("xyz", "F2 L2"))
+          )
+        )
       case Error(err) =>
         println("Received Error :" + err)
       case Complete(msg) =>
