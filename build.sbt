@@ -13,6 +13,7 @@ libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0
 val AkkaVersion = "2.6.15"
 libraryDependencies += "com.typesafe.akka" %% "akka-stream-typed" % AkkaVersion
 libraryDependencies += "com.typesafe.akka" %% "akka-serialization-jackson" % AkkaVersion
+libraryDependencies += "com.typesafe.akka" %% "akka-actor-testkit-typed" % AkkaVersion % Test
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.surajgharat.justchat.controllers._"

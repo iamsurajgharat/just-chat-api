@@ -38,7 +38,7 @@ object UserSessionManagerActor {
 
             // create a stream source which is based on an actor. 
             // It means if we pass a message to that actor, the message would be emitted into the stream from this source
-            val source1 = ActorSource.actorRef[UserResponse](
+            val actorSource = ActorSource.actorRef[UserResponse](
               completionMatcher = { case Done2(msg) => },
               failureMatcher = { case Error2(err) =>
                 new java.lang.Error("Something terrible happened :" + err)
@@ -47,7 +47,7 @@ object UserSessionManagerActor {
               overflowStrategy = OverflowStrategy.fail
             )
 
-            val userResponseActor = source1.toMat(hubSink)(akka.stream.scaladsl.Keep.left).run()
+            val userResponseActor = actorSource.toMat(hubSink)(akka.stream.scaladsl.Keep.left).run()
 
             val userSessionActor: ActorRef[UserRequest] = context.spawn(UserSessionActor(userProfile, userResponseActor), "userSessionActor3" + userProfile.id)
 
