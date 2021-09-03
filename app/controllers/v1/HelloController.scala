@@ -9,11 +9,9 @@ import play.api.libs.json.JsNumber
 import play.api.libs.json.Reads
 import play.api.libs.json.JsResult
 import play.api.libs.json.JsSuccess
-import play.api.libs.json.Json
-import play.api.mvc
+import play.api.libs.json.Json
 import play.api.libs.json.JsError
-import scala.concurrent.ExecutionContext
-import play.api.libs.json.JsPath
+import scala.concurrent.ExecutionContext
 
 class HelloController @Inject() (cc: ControllerComponents)(implicit
     ec: ExecutionContext

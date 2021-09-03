@@ -59,9 +59,9 @@ object UserSessionActor {
   def apply(
       userProfile: models.UserProfile,
       responseActor: ActorRef[UserResponse]
-  ): Behavior[UserRequest] = Behaviors.receive((context, messgae) => {
+  ): Behavior[UserRequest] = Behaviors.receive((_, messgae) => {
     messgae match {
-      case Connect(userId, name) =>
+      case Connect(userId, _) =>
         println("Received connect :" + userId)
         responseActor ! Connected("Yasss, finally we are connected!")
         sendPinnedChats(responseActor)

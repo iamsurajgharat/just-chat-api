@@ -25,7 +25,6 @@ import akka.stream.scaladsl.Sink
 import akka.stream.ActorMaterializer
 import akka.stream.Materializer
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.FiniteDuration
 import actors.UserSessionActor.Ping
 import akka.stream.SinkRef
 import akka.stream.typed.scaladsl.ActorSink
@@ -35,7 +34,8 @@ class UserSessionManagerActorSpec
     with Matchers
     with BeforeAndAfterAll {
 
-  val oneSecond = FiniteDuration(1, TimeUnit.SECONDS)
+  import scala.concurrent.duration._
+  val oneSecond = 1.second
   val testKit = ActorTestKit()
   val probe1 = testKit.createTestProbe[UserSessionActor.UserRequest]()
   implicit val scheduler = testKit.scheduler

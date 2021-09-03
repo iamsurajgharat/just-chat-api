@@ -11,12 +11,10 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Sink
 import akka.stream.Materializer
 import akka.stream.typed.scaladsl.ActorSink
-import akka.stream.scaladsl.MergeHub
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.MergeHub
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.BroadcastHub
-import models._
-import akka.actor.typed.scaladsl.ActorContext
+import models._
 object UserSessionManagerActor {
 
   // actor supported messages
@@ -37,7 +35,7 @@ object UserSessionManagerActor {
       {
         message match {
           case msg @ CreateUserSessionActor(
-                userProfile,
+                _,
                 actorBehavior,
                 replyTo
               ) =>
@@ -55,7 +53,7 @@ object UserSessionManagerActor {
             // create a stream source which is based on an actor.
             // It means if we pass a message to that actor, the message would be emitted into the stream from this source
             val actorSource = ActorSource.actorRef[UserResponse](
-              completionMatcher = { case CompleteOut(msg) => },
+              completionMatcher = { case CompleteOut(_) => },
               failureMatcher = { case ErrorOut(err) =>
                 new java.lang.Error("Something terrible happened :" + err)
               },

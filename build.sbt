@@ -3,9 +3,17 @@ organization := "com.surajgharat.justchat"
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file(".")).enablePlugins(PlayScala).settings(
+    scalacOptions += "-Wunused"
+)
 
-scalaVersion := "2.13.6"
+inThisBuild(
+  List(
+    scalaVersion := "2.13.6",
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision
+  )
+)
 
 libraryDependencies += guice
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
