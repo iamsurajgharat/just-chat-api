@@ -1,32 +1,19 @@
 package actors
 
-import org.scalatestplus.play._
-import org.scalatestplus.play.guice._
-import play.api.test._
 import play.api.test.Helpers._
-
-import akka.actor.testkit.typed.scaladsl.BehaviorTestKit
-import akka.actor.testkit.typed.scaladsl.TestInbox
-import akka.stream.scaladsl.Flow
-import akka.NotUsed
 import models.UserProfile
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import org.scalatest.BeforeAndAfterAll
 import akka.actor.typed.scaladsl.AskPattern._
-import org.scalatest.AsyncFunSpec
 import org.scalatest.AsyncFlatSpec
 import org.scalatest.Matchers
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
-import org.scalatest.BeforeAndAfterEach
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Sink
-import akka.stream.ActorMaterializer
 import akka.stream.Materializer
-import java.util.concurrent.TimeUnit
 import actors.UserSessionActor.Ping
-import akka.stream.SinkRef
 import akka.stream.typed.scaladsl.ActorSink
 
 class UserSessionManagerActorSpec
@@ -111,7 +98,7 @@ class UserSessionManagerActorSpec
   }
 
   it should "give out messages sent to response actor" in {
-    import akka.pattern.pipe
+
     val subject =
       testKit.spawn(UserSessionManagerActor(), "UserSessionManagerActor3")
 
@@ -140,7 +127,7 @@ class UserSessionManagerActorSpec
             ActorSink.actorRef(
               probe2.ref,
               onCompleteMessage = UserSessionActor.CompleteOut(Some("")),
-              onFailureMessage = (err) => UserSessionActor.ErrorOut("")
+              onFailureMessage = (_) => UserSessionActor.ErrorOut("")
             )
           )
       )

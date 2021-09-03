@@ -1,16 +1,9 @@
 package actors
 
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
-import akka.actor.testkit.typed.scaladsl.ActorTestKit
-import com.fasterxml.jackson.module.scala.deser.overrides
-import scala.concurrent.Future
 import models.UserProfile
-import scala.concurrent.duration.FiniteDuration
-import java.util.concurrent.TimeUnit
 import akka.actor.testkit.typed.scaladsl.BehaviorTestKit
-import akka.actor.testkit.typed.Effect._
 import akka.actor.testkit.typed.scaladsl.TestInbox
 
 class UserSessionActorSpec
