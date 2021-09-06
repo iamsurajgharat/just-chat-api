@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: just-chat-api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: just-chat-api
+  template:
+    metadata:
+      name: just-chat-api
+      labels:
+        service: just-chat-api
+    spec:
+      containers:
+        - name: just-chat-api
+          image: surajgharat/just-chat-api:0.0.1
+          ports:
+            - containerPort: 9000
+          env:
+            - name: APPLICATION_SECRET
+              value: abcdefghijklmnopqrstuvwxyz
