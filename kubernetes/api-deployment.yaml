@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: just-chat-api
-          image: surajgharat/just-chat-api:0.0.1
+          image: surajgharat/just-chat-api:0.0.2
           ports:
             - containerPort: 9000
           env:

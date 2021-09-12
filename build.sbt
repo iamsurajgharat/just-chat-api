@@ -37,8 +37,8 @@ dockerChmodType := DockerChmodType.UserGroupWriteExecute
 dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
 
 Docker / maintainer := "mr.surajgharat2@gmail.com"
-Docker / packageName := "just-chat-api"
-Docker / version := sys.env.getOrElse("BUILD_NO", "0")
+Docker / packageName := "surajgharat/just-chat-api"
+Docker / version := sys.env.getOrElse("BUILD_NO", "0.0.2")
 Docker / daemonUserUid := None
 Docker / daemonUser := "daemon"
 dockerExposedPorts := Seq(9000)
