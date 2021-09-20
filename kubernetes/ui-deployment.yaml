@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: just-chat-ui-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: just-chat-ui
+  template:
+    metadata:
+      name: just-chat-ui
+      labels:
+        app: just-chat-ui
+    spec:
+      containers:
+        - name: just-chat-ui
+          image: surajgharat/just-chat-ui
+          ports:
+            - containerPort: 80

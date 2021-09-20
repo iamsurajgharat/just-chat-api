@@ -3,9 +3,8 @@ kind: Service
 metadata:
   name: just-chat-api-service
 spec:
-  type: NodePort
   selector:
-    service: just-chat-api
+    app: just-chat-api
   ports:
     - protocol: TCP
       port: 9000

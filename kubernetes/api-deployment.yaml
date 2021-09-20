@@ -6,12 +6,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      service: just-chat-api
+      app: just-chat-api
   template:
     metadata:
       name: just-chat-api
       labels:
-        service: just-chat-api
+        app: just-chat-api
     spec:
       containers:
         - name: just-chat-api
